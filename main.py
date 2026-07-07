@@ -25,6 +25,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://app-f5d4jo.example.com",
+        "https://exam.sanand.workers.dev",
     ],
     allow_credentials=False,
     allow_methods=["*"],
