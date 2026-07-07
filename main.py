@@ -66,7 +66,7 @@ async def request_context(request: Request, call_next):
 @app.middleware("http")
 async def rate_limit(request: Request, call_next):
 
-    if request.url.path == "/ping":
+    if request.url.path == "/ping" and request.method != "OPTIONS":
 
         client = request.headers.get("X-Client-Id", "anonymous")
 
