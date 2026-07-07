@@ -66,7 +66,6 @@ async def request_context(request: Request, call_next):
 @app.middleware("http")
 async def rate_limit(request: Request, call_next):
 
-    # Only apply rate limit to /ping
     if request.url.path == "/ping":
 
         client = request.headers.get("X-Client-Id", "anonymous")
@@ -78,12 +77,10 @@ async def rate_limit(request: Request, call_next):
             bucket.popleft()
 
         if len(bucket) >= RATE_LIMIT:
-            response = JSONResponse(
+            return JSONResponse(
                 status_code=429,
                 content={"detail": "Rate limit exceeded"},
             )
-            response.headers["X-Request-ID"] = request.state.request_id
-            return response
 
         bucket.append(now)
 
