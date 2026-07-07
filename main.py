@@ -23,10 +23,14 @@ allowed_origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=[
+        "https://app-f5d4jo.example.com",
+        "https://exam.sanand.workers.dev",
+    ],
     allow_credentials=False,
-    allow_methods=["*"],
+    allow_methods=["GET", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["X-Request-ID"],
 )
 
 # -----------------------------
