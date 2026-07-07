@@ -35,7 +35,7 @@ app.add_middleware(
 # -----------------------------
 # Rate Limiter
 # -----------------------------
-RATE_LIMIT = 13
+RATE_LIMIT = 15
 WINDOW = 10
 
 clients = defaultdict(deque)
