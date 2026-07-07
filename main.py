@@ -41,28 +41,6 @@ WINDOW = 10
 clients = defaultdict(deque)
 
 
-@app.middleware("http")
-async def rate_limit(request: Request, call_next):
-    client = request.headers.get("X-Client-Id", "anonymous")
-
-    now = time.time()
-    bucket = clients[client]
-
-    while bucket and bucket[0] <= now - WINDOW:
-        bucket.popleft()
-
-    if len(bucket) >= RATE_LIMIT:
-        return JSONResponse(
-            status_code=429,
-            content={"detail": "Rate limit exceeded"},
-        )
-
-    bucket.append(now)
-
-    response = await call_next(request)
-    return response
-
-
 # -----------------------------
 # Request Context
 # -----------------------------
@@ -80,6 +58,31 @@ async def request_context(request: Request, call_next):
     response.headers["X-Request-ID"] = request_id
 
     return response
+
+
+# -----------------------------
+# Rate Limiter
+# -----------------------------
+@app.middleware("http")
+async def rate_limit(request: Request, call_next):
+    client = request.headers.get("X-Client-Id", "anonymous")
+
+    now = time.time()
+    bucket = clients[client]
+
+    while bucket and bucket[0] <= now - WINDOW:
+        bucket.popleft()
+
+    if len(bucket) >= RATE_LIMIT:
+        response = JSONResponse(
+            status_code=429,
+            content={"detail": "Rate limit exceeded"},
+        )
+        return response
+
+    bucket.append(now)
+
+    return await call_next(request)
 
 
 # -----------------------------
