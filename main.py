@@ -63,9 +63,11 @@ async def middleware(request: Request, call_next):
     response.headers["X-Request-ID"] = request_id
     return response
 
-@app.get("/")
+from fastapi import Response
+
+@app.api_route("/", methods=["GET", "HEAD"])
 def root():
-    return {"status": "ok"}
+    return Response(status_code=200)
 @app.get("/ping")
 async def ping(request: Request):
     return {
