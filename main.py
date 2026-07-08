@@ -38,19 +38,9 @@ requests = defaultdict(deque)
 
 @app.middleware("http")
 async def middleware(request: Request, call_next):
-    # -----------------------------
-    # Request Context
-    # -----------------------------
-    request_id = request.headers.get("X-Request-ID")
-
-    if not request_id:
-        request_id = str(uuid.uuid4())
-
+    request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
     request.state.request_id = request_id
 
-    # -----------------------------
-    # Rate Limiter
-    # -----------------------------
     client_id = request.headers.get("X-Client-Id", "anonymous")
 
     now = time.time()
@@ -60,21 +50,22 @@ async def middleware(request: Request, call_next):
         q.popleft()
 
     if len(q) >= RATE_LIMIT:
-        return JSONResponse(
+        response = JSONResponse(
             status_code=429,
             content={"detail": "Rate limit exceeded"},
-            headers={"X-Request-ID": request_id},
         )
+        response.headers["X-Request-ID"] = request_id
+        return response
 
     q.append(now)
 
     response = await call_next(request)
-
     response.headers["X-Request-ID"] = request_id
-
     return response
 
-
+@app.get("/")
+def root():
+    return {"status": "ok"}
 @app.get("/ping")
 async def ping(request: Request):
     return {
